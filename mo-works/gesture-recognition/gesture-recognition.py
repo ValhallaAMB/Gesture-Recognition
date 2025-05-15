@@ -1,30 +1,32 @@
 from pprint import pprint
-import cv2
+import cv2 # used for video capture and image processing
 import numpy as np
-import mediapipe as mp
+import mediapipe as mp # used for hand tracking and gesture recognition
 from mediapipe.tasks.python.vision import (
     GestureRecognizer,
     GestureRecognizerOptions,
-)
-from mediapipe.tasks.python import BaseOptions
-from mediapipe.framework.formats import landmark_pb2
-from textblob import TextBlob as tb
-from spellchecker import SpellChecker
+) # used for gesture recognition
+from mediapipe.tasks.python import BaseOptions # used for base options
+from mediapipe.framework.formats import landmark_pb2 # used for landmark data
+from textblob import TextBlob as tb # used for text processing
+from spellchecker import SpellChecker # used for spell checking
 
-mp_hands = mp.solutions.hands
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
+mp_hands = mp.solutions.hands # mediapipe hands module
+mp_drawing = mp.solutions.drawing_utils # mediapipe drawing module
+mp_drawing_styles = mp.solutions.drawing_styles # mediapipe drawing styles module
 
-spell = SpellChecker()
+spell = SpellChecker() # spell checker object
 
-sentence = []
-text = ""
-blob = tb("")
+sentence = [] # list to store sentences
+text = "" # string to store text
+blob = tb("") # TextBlob object to store text
 
-
+# Function to draw hand landmarks on the image
 def draw_landmarks(image, results) -> None:
     for hand_landmarks in results.hand_landmarks:
+        # Create a NormalizedLandmarkList to hold the hand landmarks in MediaPipe format
         hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+        # Converts the hand landmarks to a list of NormalizedLandmark protobuf objects with x, y, z coordinates.
         hand_landmarks_proto.landmark.extend(
             [
                 landmark_pb2.NormalizedLandmark(
@@ -34,6 +36,7 @@ def draw_landmarks(image, results) -> None:
             ]
         )
 
+        # Draw the hand landmarks on the image
         mp_drawing.draw_landmarks(
             image,
             hand_landmarks_proto,
@@ -43,6 +46,7 @@ def draw_landmarks(image, results) -> None:
         )
 
 
+# Function to display the recognized sentence on the image
 def display_sentence(image, results) -> None:
     global sentence
     global blob
@@ -65,16 +69,19 @@ def display_sentence(image, results) -> None:
     # if len(text) > 25:
     #     text = text[-25:]
 
+    # Extracting gesture names and scores
     for gestures in results.gestures:
         for gesture in gestures:
+            # Ensure the gesture score is above a threshold (e.g., 0.99)
             if gesture.score > 0.99:
                 if len(text) > 0:
                     if not text.endswith(gesture.category_name):
                         text += gesture.category_name
                 else:
                     text += gesture.category_name
-            # print(gesture.category_name, gesture.score)
-
+            print(gesture.category_name, gesture.score)
+    
+    # Spelling and sentence correction
     if not results.gestures and len(text) > 0 and not text.endswith(" "):
         text = text.lower()
         blob += spell.correction(text)
@@ -103,6 +110,7 @@ def display_sentence(image, results) -> None:
     # if len(sentence) > 25:
     #     sentence = sentence[-25:]
 
+    # Display the recognized sentence on the image
     cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
     cv2.putText(
         image,
@@ -130,6 +138,7 @@ def main() -> None:
     # Open webcam
     cap = cv2.VideoCapture(0)
 
+    # Main function to run the GestureRecognizer model with specified options
     with GestureRecognizer.create_from_options(options) as recognizer:
         while cap.isOpened():
             ret, frame = cap.read()

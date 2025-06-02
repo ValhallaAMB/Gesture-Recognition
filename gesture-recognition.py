@@ -131,7 +131,7 @@ def display_sentence(image, results) -> None:
 def main() -> None:
     # Load GestureRecognizer model
     options = GestureRecognizerOptions(
-        base_options=BaseOptions(model_asset_path="models/gesture_recognizer.task"),
+        base_options=BaseOptions(model_asset_path="models/new5_gesture_recognizer.task"),
         num_hands=1,  # Keep it 1 for now
     )
 

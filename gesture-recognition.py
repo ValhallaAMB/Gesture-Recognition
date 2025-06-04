@@ -10,6 +10,7 @@ from mediapipe.tasks.python import BaseOptions # used for base options
 from mediapipe.framework.formats import landmark_pb2 # used for landmark data
 from textblob import TextBlob as tb # used for text processing
 from spellchecker import SpellChecker # used for spell checking
+import time # used for time and time extraction
 
 mp_hands = mp.solutions.hands # mediapipe hands module
 mp_drawing = mp.solutions.drawing_utils # mediapipe drawing module
@@ -17,9 +18,9 @@ mp_drawing_styles = mp.solutions.drawing_styles # mediapipe drawing styles modul
 
 spell = SpellChecker() # spell checker object
 
-sentence = [] # list to store sentences
 text = "" # string to store text
 blob = tb("") # TextBlob object to store text
+last_gesture_time = time.time() #this will help create spaces using timing of the last detected gesture
 
 # Function to draw hand landmarks on the image
 def draw_landmarks(image, results) -> None:
@@ -48,77 +49,51 @@ def draw_landmarks(image, results) -> None:
 
 # Function to display the recognized sentence on the image
 def display_sentence(image, results) -> None:
-    global sentence
-    global blob
-    global text
-    # for gestures in results.gestures:
-    #     for gesture in gestures:
-    #         if gesture.score > 0.99:
-    #             if len(text) > 0:
-    #                 if not text.endswith(gesture.category_name):
-    #                     text += gesture.category_name
-    #             else:
-    #                 text += gesture.category_name
-    #         # print(gesture.category_name, gesture.score)
-
-    # if not results.gestures and len(text) > 0 and not text.endswith(" "):
-    #     sentence.append(spell.correction(text))
-    #     text = ""
-    #     sentence.append(" ")
-
-    # if len(text) > 25:
-    #     text = text[-25:]
+    global blob, text, last_gesture_time
+    
+    current_time = time.time()
+    gesture_detected = False
 
     # Extracting gesture names and scores
     for gestures in results.gestures:
         for gesture in gestures:
             # Ensure the gesture score is above a threshold (e.g., 0.99)
             if gesture.score > 0.99:
+                gesture_detected = True
+                last_gesture_time = current_time
                 if len(text) > 0:
                     if not text.endswith(gesture.category_name):
                         text += gesture.category_name
                 else:
                     text += gesture.category_name
             print(gesture.category_name, gesture.score)
-    
-    # Spelling and sentence correction
-    if not results.gestures and len(text) > 0 and not text.endswith(" "):
-        text = text.lower()
-        blob += spell.correction(text)
-        blob += " "
-        text = ""
 
-    if len(blob) > 25:
-        blob = blob[-25:]
+    # If 2 seconds pass and no gesture is being detected, add a space to spearate words
+    if not gesture_detected and current_time - last_gesture_time > 2:
+        if text:
+            corrected_word = spell.correction(text).lower()
+            blob += corrected_word + " "
+            text = ""
+        last_gesture_time = current_time     
+    
+    #Sentence spelling and correction
+    if len(blob) > 100:
+        blob = blob[-100:]
         blob.correct()
     elif blob.string.count(" ") >= 2:
         blob.correct()
-
-    # for gestures in results.gestures:
-    #     for gesture in gestures:
-    #         if gesture.score > 0.99:
-    #             if len(sentence) > 0:
-    #                 if sentence[-1] != gesture.category_name:
-    #                     sentence.append(gesture.category_name)
-    #             else:
-    #                 sentence.append(gesture.category_name)
-    #         print(gesture.category_name, gesture.score)
-
-    # if not results.gestures and len(sentence) > 0 and sentence[-1] != " ":
-    #     sentence.append(" ")
-
-    # if len(sentence) > 25:
-    #     sentence = sentence[-25:]
+    elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 3: #this is for singlular letters such as "I" and "a" in sentences
+        blob.correct()
+    # elif current_time - last_gesture_time >= 5:
+    #     blob = tb("")
+    #     text = ""
+    
 
     # Display the recognized sentence on the image
     cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
     cv2.putText(
         image,
-        # text,
-        # blob.string,
-        # "".join(sentence),
-        # "".join(sentence) + text if len(text) > 0 else "".join(sentence),
-        blob.string + text if len(text) > 0 else blob.string,
+        blob.string + text if len(text) > 0 else blob.string, #if you dont include .string the application will crash because it cant convert the text into a string by itself
         (3, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,

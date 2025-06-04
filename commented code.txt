@@ -1,0 +1,53 @@
+# for gestures in results.gestures:
+    #     for gesture in gestures:
+    #         if gesture.score > 0.99:
+    #             if len(text) > 0:
+    #                 if not text.endswith(gesture.category_name):
+    #                     text += gesture.category_name
+    #             else:
+    #                 text += gesture.category_name
+    #         # print(gesture.category_name, gesture.score)
+
+    # if not results.gestures and len(text) > 0 and not text.endswith(" "):
+    #     sentence.append(spell.correction(text))
+    #     text = ""
+    #     sentence.append(" ")
+
+    # if len(text) > 25:
+    #     text = text[-25:]
+
+---------------------------
+
+# for gestures in results.gestures:
+    #     for gesture in gestures:
+    #         if gesture.score > 0.99:
+    #             if len(sentence) > 0:
+    #                 if sentence[-1] != gesture.category_name:
+    #                     sentence.append(gesture.category_name)
+    #             else:
+    #                 sentence.append(gesture.category_name)
+    #         print(gesture.category_name, gesture.score)
+
+    # if not results.gestures and len(sentence) > 0 and sentence[-1] != " ":
+    #     sentence.append(" ")
+
+    # if len(sentence) > 25:
+    #     sentence = sentence[-25:]
+
+-----------------------------
+
+ # Spelling and sentence correction
+    # if not results.gestures and len(text) > 0 and not text.endswith(" "):
+    #     text = text.lower()
+    #     blob += spell.correction(text)
+    #     blob += " "
+    #     text = ""
+
+-----------------------------
+
+# text,
+        # blob.string,
+        # "".join(sentence),
+        # "".join(sentence) + text if len(text) > 0 else "".join(sentence),
+
+

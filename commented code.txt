@@ -50,4 +50,39 @@
         # "".join(sentence),
         # "".join(sentence) + text if len(text) > 0 else "".join(sentence),
 
+--------------------------------
+
+TO DETECT DUPLICATE LETTERS USING COORDINATES (ABSOLUTE BULLSHIT THO)
+# hand_position = None
+
+    # # Check if hand landmarks are detected
+    # if hasattr(results, "hand_landmarks") and results.hand_landmarks:
+    #     print("Hand landmarks detected:", results.hand_landmarks)  # Debugging
+
+    # # if results.hand_landmarks:
+    # for hand_landmarks_proto in results.hand_landmarks:
+    #     if hasattr(hand_landmarks_proto, "landmark"):
+    #         x_coords = [lm.x for lm in hand_landmarks_proto.landmark]
+    #         y_coords = [lm.y for lm in hand_landmarks_proto.landmark]
+            
+    #         frame_height, frame_width, _ = image.shape
+    #         center_x = int(np.mean(x_coords) * frame_width)
+    #         center_y = int(np.mean(y_coords) * frame_height)
+
+    #         hand_position = (center_x, center_y)
+
+    #         #if the hand is moved significantly, reset the gesture detection
+    #         if last_hand_position is not None:
+    #             movement_threshold = 50
+    #             if(
+    #                 abs(center_x - last_hand_position[0]) > movement_threshold
+    #                 or abs(center_y - last_hand_position[1]) > movement_threshold
+    #             ):
+    #                 gesture_detected = True
+    #                 last_gesture_time = current_time
+
+    #         last_hand_position = hand_position
+    #     # else:
+    #     #      print("No landmark attribute found for hand_landmarks_proto")  # Debugging
+
 

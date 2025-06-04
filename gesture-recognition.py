@@ -22,6 +22,11 @@ text = "" # string to store text
 blob = tb("") # TextBlob object to store text
 last_gesture_time = time.time() #this will help create spaces using timing of the last detected gesture
 
+# last_hand_position = None # to track the previous hand posiiton
+
+last_detected_gesture = None  # To store the last detected gesture
+last_detected_time = 0  # To store the time of the last detected gesture
+
 # Function to draw hand landmarks on the image
 def draw_landmarks(image, results) -> None:
     for hand_landmarks in results.hand_landmarks:
@@ -49,11 +54,11 @@ def draw_landmarks(image, results) -> None:
 
 # Function to display the recognized sentence on the image
 def display_sentence(image, results) -> None:
-    global blob, text, last_gesture_time
-    
+    global blob, text, last_gesture_time, last_detected_gesture, last_detected_time
+    # global last_hand_position
     current_time = time.time()
     gesture_detected = False
-
+    
     # Extracting gesture names and scores
     for gestures in results.gestures:
         for gesture in gestures:
@@ -61,12 +66,16 @@ def display_sentence(image, results) -> None:
             if gesture.score > 0.99:
                 gesture_detected = True
                 last_gesture_time = current_time
-                if len(text) > 0:
-                    if not text.endswith(gesture.category_name):
-                        text += gesture.category_name
-                else:
+                
+                # Add gesture to text only if cooldown period has elapsed or it's a different gesture
+                if (
+                    last_detected_gesture != gesture.category_name
+                    or current_time - last_detected_time > 3    # wait 3 seconds befor displaying duplicate letters, increase this if you are slow in fingerspelling
+                ):
                     text += gesture.category_name
-            print(gesture.category_name, gesture.score)
+                    last_detected_gesture = gesture.category_name
+                    last_detected_time = current_time
+                print(gesture.category_name, gesture.score)
 
     # If 2 seconds pass and no gesture is being detected, add a space to spearate words
     if not gesture_detected and current_time - last_gesture_time > 2:
@@ -82,18 +91,19 @@ def display_sentence(image, results) -> None:
         blob.correct()
     elif blob.string.count(" ") >= 2:
         blob.correct()
-    elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 3: #this is for singlular letters such as "I" and "a" in sentences
+    elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 2: # this is for singlular letters such as "I" and "a" in sentences, increase this if you are slow in fingerspelling
         blob.correct()
-    # elif current_time - last_gesture_time >= 5:
-    #     blob = tb("")
-    #     text = ""
+    
+    if current_time - last_gesture_time >= 5:
+        blob = tb("")
+        text = ""
     
 
     # Display the recognized sentence on the image
     cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
     cv2.putText(
         image,
-        blob.string + text if len(text) > 0 else blob.string, #if you dont include .string the application will crash because it cant convert the text into a string by itself
+        blob.string + text if len(text) > 0 else blob.string, # if you dont include .string the application will crash because it cant convert the text into a string by itself
         (3, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,

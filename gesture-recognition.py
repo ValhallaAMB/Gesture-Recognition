@@ -62,7 +62,7 @@ def draw_landmarks(image, results) -> None:
 # Function to display the recognized sentence on the image
 def display_sentence(image, results) -> None:
     global blob, text, last_gesture_time, last_detected_gesture, last_detected_time
-    # global last_hand_position
+    
     current_time = time.time()
     gesture_detected = False
     
@@ -84,26 +84,48 @@ def display_sentence(image, results) -> None:
                     last_detected_time = current_time
                 print(gesture.category_name, gesture.score)
 
-    # If 2 seconds pass and no gesture is being detected, add a space to spearate words
-    if not gesture_detected and current_time - last_gesture_time > 2:
-        if text:
-            corrected_word = spell.correction(text).lower()
-            blob += corrected_word + " "
-            text = ""
-        last_gesture_time = current_time     
+    # # If 2 seconds pass and no gesture is being detected, add a space to spearate words
+    # if not gesture_detected and current_time - last_gesture_time > 2:
+    #     if text:
+    #         corrected_word = spell.correction(text).lower()
+    #         blob += corrected_word + " "
+    #         text = ""
+    #     last_gesture_time = current_time     
     
     #Sentence spelling and correction
-    if len(blob) > 100:
-        blob = blob[-100:]
-        blob.correct()
-    elif blob.string.count(" ") >= 2:
-        blob.correct()
-    elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 2: # this is for singlular letters such as "I" and "a" in sentences, increase this if you are slow in fingerspelling
-        blob.correct()
+    # if len(blob) > 100:
+    #     blob = blob[-100:]
+    #     blob.correct()
+    # elif blob.string.count(" ") >= 2:
+    #     blob.correct()
+    # elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 2: # this is for singlular letters such as "I" and "a" in sentences, increase this if you are slow in fingerspelling
+    #     blob.correct()
     
-    if current_time - last_gesture_time >= 5:
-        blob = tb("")
-        text = ""
+    # if current_time - last_gesture_time >= 5:
+    #     blob = tb("")
+    #     text = ""
+
+    if not gesture_detected:
+        time_since_last_activity = current_time - last_gesture_time
+
+        # check for the LONGEST timeout first.
+        # Has it been over 5 seconds? ok, clear the screen.
+        if time_since_last_activity > 5:
+            # We only clear if there is actually text on the screen.
+            if len(text) > 0 or len(blob.string) > 0:
+                print(f"Clearing Text........")
+                blob = tb("")
+                text = ""
+                # Reset the timer. This prevents the screen from being cleared on every single frame after the 5-second mark.
+                last_gesture_time = current_time
+        elif time_since_last_activity > 2 and len(text) > 0:
+                # Correct the spelling of the word and add it to the main sentence blob.
+                corrected_word = spell.correction(text)
+                if corrected_word: 
+                    blob += corrected_word.lower() + " "
+                text = "" 
+                # We reset the timer. This marks the end of the word as a new "last activity" point.
+                last_gesture_time = current_time
     
 
     # Display the recognized sentence on the image

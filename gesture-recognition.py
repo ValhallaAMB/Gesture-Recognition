@@ -1,3 +1,10 @@
+# To do list: add some more comments on the variables you used so you dont fuck up your brain letter when explaining things
+#             add more comments on the functions and if statements you added
+#             clean your code  
+
+
+
+
 from pprint import pprint
 import cv2 # used for video capture and image processing
 import numpy as np
@@ -116,7 +123,7 @@ def display_sentence(image, results) -> None:
 def main() -> None:
     # Load GestureRecognizer model
     options = GestureRecognizerOptions(
-        base_options=BaseOptions(model_asset_path="models/new5_gesture_recognizer.task"),
+        base_options=BaseOptions(model_asset_path="models/new_HP4_gesture_recognizer.task"),
         num_hands=1,  # Keep it 1 for now
     )
 

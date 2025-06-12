@@ -85,4 +85,26 @@ TO DETECT DUPLICATE LETTERS USING COORDINATES (ABSOLUTE BULLSHIT THO)
     #     # else:
     #     #      print("No landmark attribute found for hand_landmarks_proto")  # Debugging
 
+--------------------------
+
+# # If 2 seconds pass and no gesture is being detected, add a space to spearate words
+    # if not gesture_detected and current_time - last_gesture_time > 2:
+    #     if text:
+    #         corrected_word = spell.correction(text).lower()
+    #         blob += corrected_word + " "
+    #         text = ""
+    #     last_gesture_time = current_time     
+    
+    #Sentence spelling and correction
+    # if len(blob) > 100:
+    #     blob = blob[-100:]
+    #     blob.correct()
+    # elif blob.string.count(" ") >= 2:
+    #     blob.correct()
+    # elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 2: # this is for singlular letters such as "I" and "a" in sentences, increase this if you are slow in fingerspelling
+    #     blob.correct()
+    
+    # if current_time - last_gesture_time >= 5:
+    #     blob = tb("")
+    #     text = ""
 

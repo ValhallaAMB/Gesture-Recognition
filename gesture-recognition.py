@@ -1,10 +1,3 @@
-# To do list: add some more comments on the variables you used so you dont fuck up your brain letter when explaining things
-#             add more comments on the functions and if statements you added
-#             clean your code  
-
-
-
-
 from pprint import pprint
 import cv2 # used for video capture and image processing
 import numpy as np
@@ -28,8 +21,6 @@ spell = SpellChecker() # spell checker object
 text = "" # string to store text
 blob = tb("") # TextBlob object to store text
 last_gesture_time = time.time() #this will help create spaces using timing of the last detected gesture
-
-# last_hand_position = None # to track the previous hand posiiton
 
 last_detected_gesture = None  # To store the last detected gesture
 last_detected_time = 0  # To store the time of the last detected gesture
@@ -74,50 +65,30 @@ def display_sentence(image, results) -> None:
                 gesture_detected = True
                 last_gesture_time = current_time
                 
-                # Add gesture to text only if cooldown period has elapsed or it's a different gesture
+                # Add gesture to text only if cooldown period has elapsed or if it's a different gesture
                 if (
                     last_detected_gesture != gesture.category_name
-                    or current_time - last_detected_time > 3    # wait 3 seconds befor displaying duplicate letters, increase this if you are slow in fingerspelling
+                    or current_time - last_detected_time > 3    # wait 3 seconds before displaying duplicate letters, increase this if you are slow in fingerspelling
                 ):
                     text += gesture.category_name
                     last_detected_gesture = gesture.category_name
                     last_detected_time = current_time
                 print(gesture.category_name, gesture.score)
 
-    # # If 2 seconds pass and no gesture is being detected, add a space to spearate words
-    # if not gesture_detected and current_time - last_gesture_time > 2:
-    #     if text:
-    #         corrected_word = spell.correction(text).lower()
-    #         blob += corrected_word + " "
-    #         text = ""
-    #     last_gesture_time = current_time     
-    
-    #Sentence spelling and correction
-    # if len(blob) > 100:
-    #     blob = blob[-100:]
-    #     blob.correct()
-    # elif blob.string.count(" ") >= 2:
-    #     blob.correct()
-    # elif blob.string.count(" ") >= 1 and current_time - last_gesture_time> 2: # this is for singlular letters such as "I" and "a" in sentences, increase this if you are slow in fingerspelling
-    #     blob.correct()
-    
-    # if current_time - last_gesture_time >= 5:
-    #     blob = tb("")
-    #     text = ""
-
+    # To remove sentences from the display and make way for new sentences, the first if statement has to run first otherwise it wont work
+    # if you make a joined if statement with the keyword "and" it doesnt work due to clashes in logic
     if not gesture_detected:
         time_since_last_activity = current_time - last_gesture_time
 
         # check for the LONGEST timeout first.
-        # Has it been over 5 seconds? ok, clear the screen.
+        # Has it been over 5 seconds? ok, clear the screen. Increase this timer if you are slow at fingerspelling
         if time_since_last_activity > 5:
             # We only clear if there is actually text on the screen.
             if len(text) > 0 or len(blob.string) > 0:
-                print(f"Clearing Text........")
+                print(f"CLEARING TEXT........")
                 blob = tb("")
                 text = ""
-                # Reset the timer. This prevents the screen from being cleared on every single frame after the 5-second mark.
-                last_gesture_time = current_time
+                last_gesture_time = current_time # Reset the timer. This prevents the screen from being cleared on every single frame after the 5-second mark.
         elif time_since_last_activity > 2 and len(text) > 0:
                 # Correct the spelling of the word and add it to the main sentence blob.
                 corrected_word = spell.correction(text)
@@ -132,7 +103,7 @@ def display_sentence(image, results) -> None:
     cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
     cv2.putText(
         image,
-        blob.string + text if len(text) > 0 else blob.string, # if you dont include .string the application will crash because it cant convert the text into a string by itself
+        blob.string + text if len(text) > 0 else blob.string, # if you dont include ".string" the application will crash because it cannot convert the text into a string by itself
         (3, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
@@ -145,7 +116,7 @@ def display_sentence(image, results) -> None:
 def main() -> None:
     # Load GestureRecognizer model
     options = GestureRecognizerOptions(
-        base_options=BaseOptions(model_asset_path="models/new_HP4_gesture_recognizer.task"),
+        base_options=BaseOptions(model_asset_path="models/gesture_recognizer8.task"),
         num_hands=1,  # Keep it 1 for now
     )
 

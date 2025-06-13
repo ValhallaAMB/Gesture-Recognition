@@ -1,2 +1,6 @@
-# ignore virtual environment folder
+# ignore virtual environment folder and data folder
 .venv/
+venv/
+
+# ignore data files
+Data/

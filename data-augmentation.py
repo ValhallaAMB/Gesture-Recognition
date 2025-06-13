@@ -18,16 +18,16 @@ def load_and_preprocess_image(image_path):
 def data_augmentation_layer(image):
     # Adds a series of data augmentation layers to the image
     data_augmentation = tf.keras.Sequential([
-        layers.RandomContrast(0.4),
-        layers.RandomSaturation(0.7),
+        layers.RandomContrast(0.5),
+        # layers.RandomSaturation(0.7),
         layers.RandomFlip("horizontal"),
-        layers.RandomRotation(0.03),
+        layers.RandomRotation(0.025),
     ])
     return data_augmentation(image)
 
 def main():
     data_dir = "Data" # Change this to your data folder name
-    target_augmented = 319 # Change this to the number of augmented images you want
+    target_augmented = 412 # Change this to the number of augmented images you want
 
     for subfolder in os.listdir(data_dir):
         subfolder_path = os.path.join(data_dir, subfolder)

@@ -60,7 +60,13 @@ while True:
 
     img = cv2.flip(img, 1)  # flip the image horizontally
     cv2.imshow("Image", img)  # display original image with hand tracking
-    key = cv2.waitKey(1)
+    
+    key = cv2.waitKey(1) # wait for key press
+    
+    if key == ord("q"):  # exit if 'q' key is pressed
+        cap.release() # release the webcam
+        cv2.destroyAllWindows()  # close all windows
+        break
 
     # save image when 'b' key is pressed and counter is less than or equal to N number of images
     if key == ord("b") and counter < 520:  # save image when 's' key is pressed
@@ -69,4 +75,5 @@ while True:
         print(counter)
     elif counter >= 520:  # stop saving images after N number of images
         cap.release()
-        cv2.destroyAllWindows()  # close all windows if 'q' is pressed
+        cv2.destroyAllWindows()
+        break

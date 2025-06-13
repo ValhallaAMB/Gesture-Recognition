@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
         # Initialize MediaPipe gesture recognizer
         options = GestureRecognizerOptions(
-            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer.task"),
+            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer22.task"),
             num_hands=1,
         )
         self.recognizer = GestureRecognizer.create_from_options(options)

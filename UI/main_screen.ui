@@ -121,14 +121,17 @@ QGraphicsView {
              <height>500</height>
             </size>
            </property>
+            <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
            <property name="font">
             <font>
              <family>Arial</family>
              <pointsize>12</pointsize>
             </font>
-           </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAsNeeded</enum>
            </property>
            <property name="readOnly">
             <bool>false</bool>

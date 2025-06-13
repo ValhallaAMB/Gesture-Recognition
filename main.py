@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
         # Initialize MediaPipe gesture recognizer
         options = GestureRecognizerOptions(
-            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer8.task"),
+            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer.task"),
             num_hands=1,
         )
         self.recognizer = GestureRecognizer.create_from_options(options)
@@ -132,7 +132,17 @@ class MainWindow(QMainWindow):
             self.text = ""
 
         if hasattr(self, "transcriptionTextBox"):
-            self.transcriptionTextBox.setText(self.blob.string + self.text if self.text else self.blob.string)
+            combined_text = self.blob.string + self.text if self.text else self.blob.string
+
+            self.transcriptionTextBox.setPlainText(combined_text)
+
+            # Move cursor to the end of the text to follow new additions
+            cursor = self.transcriptionTextBox.textCursor()
+            cursor.movePosition(cursor.End)
+            self.transcriptionTextBox.setTextCursor(cursor)
+
+            # Ensure the text box scrolls to the cursor
+            self.transcriptionTextBox.ensureCursorVisible()
 
 
     def update_frame(self):

@@ -108,3 +108,9 @@ TO DETECT DUPLICATE LETTERS USING COORDINATES (ABSOLUTE BULLSHIT THO)
     #     blob = tb("")
     #     text = ""
 
+-------------------
+
+#spell.known(['Nusaibah', 'Muhaimin', 'Bilal']) # This line asks a question. It says, "Of the words I'm giving you, which ones do you know?" Because of the previous step, it will find all of them and return the set {'Nusaibah', 'Muhaimin', 'Bilal'}.
+                                               # Crucially, you are not doing anything with the answer. The returned set is immediately discarded.
+                                               # This line does not change the state of the spell object. It's a read-only check.
+

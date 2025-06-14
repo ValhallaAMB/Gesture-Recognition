@@ -1,3 +1,6 @@
+# TODO: take another look at speeling duplicate letters using gesture sliding / change in coordinates, the code should be
+#       in the commented code txt file
+
 from pprint import pprint
 import cv2 # used for video capture and image processing
 import numpy as np
@@ -18,12 +21,21 @@ mp_drawing_styles = mp.solutions.drawing_styles # mediapipe drawing styles modul
 
 spell = SpellChecker() # spell checker object
 
+# if I just want to make sure some words are not flagged as misspelled, here is whatever you want to add to the original spellchecker dictionary
+spell.word_frequency.load_words(['Nusaibah', 'Muhaimin', 'Bilal', 'Mekkaoui', 'Bashir'])
+
 text = "" # string to store text
 blob = tb("") # TextBlob object to store text
 last_gesture_time = time.time() #this will help create spaces using timing of the last detected gesture
 
 last_detected_gesture = None  # To store the last detected gesture
 last_detected_time = 0  # To store the time of the last detected gesture
+
+
+# ---TIMERS THAT YOU CAN CHANGE---
+Duplicate_Letter_Timer = 2.5
+Clear_Screen_Timer = 5
+Add_Word_To_Sentence_Timer = 2
 
 # Function to draw hand landmarks on the image
 def draw_landmarks(image, results) -> None:
@@ -67,8 +79,9 @@ def display_sentence(image, results) -> None:
                 
                 # Add gesture to text only if cooldown period has elapsed or if it's a different gesture
                 if (
-                    last_detected_gesture != gesture.category_name
-                    or current_time - last_detected_time > 3    # wait 3 seconds before displaying duplicate letters, increase this if you are slow in fingerspelling
+                    # last_detected_gesture != gesture.category_name
+                    (last_detected_gesture != gesture.category_name and current_time - last_detected_time > 2)
+                    or current_time - last_detected_time > Duplicate_Letter_Timer    # wait 2.5 seconds before displaying duplicate letters, increase this if you are slow in fingerspelling
                 ):
                     text += gesture.category_name
                     last_detected_gesture = gesture.category_name
@@ -82,14 +95,14 @@ def display_sentence(image, results) -> None:
 
         # check for the LONGEST timeout first.
         # Has it been over 5 seconds? ok, clear the screen. Increase this timer if you are slow at fingerspelling
-        if time_since_last_activity > 5:
+        if time_since_last_activity > Clear_Screen_Timer:
             # We only clear if there is actually text on the screen.
             if len(text) > 0 or len(blob.string) > 0:
                 print(f"CLEARING TEXT........")
                 blob = tb("")
                 text = ""
                 last_gesture_time = current_time # Reset the timer. This prevents the screen from being cleared on every single frame after the 5-second mark.
-        elif time_since_last_activity > 2 and len(text) > 0:
+        elif time_since_last_activity > Add_Word_To_Sentence_Timer and len(text) > 0:
                 # Correct the spelling of the word and add it to the main sentence blob.
                 corrected_word = spell.correction(text)
                 if corrected_word: 
@@ -116,7 +129,7 @@ def display_sentence(image, results) -> None:
 def main() -> None:
     # Load GestureRecognizer model
     options = GestureRecognizerOptions(
-        base_options=BaseOptions(model_asset_path="models/gesture_recognizer8.task"),
+        base_options=BaseOptions(model_asset_path="models/gesture_recognizer22.task"),
         num_hands=1,  # Keep it 1 for now
     )
 

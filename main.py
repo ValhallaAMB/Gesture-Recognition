@@ -1,4 +1,5 @@
 import sys
+import os
 import cv2
 import numpy as np
 import time
@@ -22,6 +23,13 @@ class WelcomeScreen(QWidget):
         super().__init__()
         uic.loadUi("./UI/welcome_screen.ui", self)
         self.startButton.clicked.connect(self.open_main_window)
+         # Construct the absolute path to the assets directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(base_dir, "assets", "logo.jpg")
+        if os.path.exists(logo_path):
+            self.logoLabel.setPixmap(QPixmap(logo_path))
+        else:
+            print("Logo not found at:", logo_path)
 
     def open_main_window(self):
         self.main_window = MainWindow()
@@ -37,6 +45,25 @@ class MainWindow(QMainWindow):
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
+        
+        # Initialize variables with default values
+        self.confidence_threshold = 0.99
+        self.confirm_word_timer = 2.0
+        self.double_letter_timer = 3.0
+        
+        # Set UI elements to match initial values
+        self.confidenceSlider.setValue(int(self.confidence_threshold * 100))
+        self.confidenceValueLabel.setText(f"{self.confidence_threshold:.2f}")
+        self.wordTimerEdit.setText(str(int(self.confirm_word_timer)))
+        self.letterTimerEdit.setText(str(int(self.double_letter_timer)))
+        
+        self.confidenceSlider.valueChanged.connect(self.update_confidence_threshold)
+        self.wordTimerEdit.editingFinished.connect(self.update_word_timer)
+        self.letterTimerEdit.editingFinished.connect(self.update_letter_timer)
+        
+        self.confidence_threshold = float(self.confidenceValueLabel.text())
+        self.confirm_word_timer = float(self.wordTimerEdit.text())
+        self.double_letter_timer = float(self.letterTimerEdit.text())
 
         # Connect UI buttons to functions
         self.cameraOnButton.clicked.connect(self.start_camera)
@@ -51,7 +78,7 @@ class MainWindow(QMainWindow):
 
         # Initialize MediaPipe gesture recognizer
         options = GestureRecognizerOptions(
-            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer22.task"),
+            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer.task"),
             num_hands=1,
         )
         self.recognizer = GestureRecognizer.create_from_options(options)
@@ -93,26 +120,56 @@ class MainWindow(QMainWindow):
                 mp_drawing.DrawingSpec(color=(80, 22, 10), thickness=2, circle_radius=4),
                 mp_drawing.DrawingSpec(color=(80, 44, 121), thickness=2, circle_radius=2),
             )
+    
+    
+    # For confidence threshold slider        
+    def update_confidence_threshold(self):
+        value = self.confidenceSlider.value() / 100
+        self.confidence_threshold = value
+        self.confidenceValueLabel.setText(f"{value:.2f}")
+
+    # For word confirmation timer
+    def update_word_timer(self):
+        try:
+            value = float(self.wordTimerEdit.text())
+            if value >= 0.5:  # Ensure value is greater than or equal to 0.5, subject to change
+                self.confirm_word_timer = value
+            else:
+                self.wordTimerEdit.setText(str(self.confirm_word_timer))
+        except ValueError:
+            self.wordTimerEdit.setText(str(self.confirm_word_timer))
+
+    # For double letter detection timer
+    def update_letter_timer(self):
+        try:
+            value = float(self.letterTimerEdit.text())
+            if value > 0:  # Ensure positive value
+                self.double_letter_timer = value
+            else:
+                self.letterTimerEdit.setText(str(self.double_letter_timer))
+        except ValueError:
+            self.letterTimerEdit.setText(str(self.double_letter_timer))
 
     def display_sentence(self, image, results):
         current_time = time.time()
         gesture_detected = False
+        
 
         for gestures in results.gestures:
             for gesture in gestures:
                 print(f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})")
-                if gesture.score > 0.995 or gesture.score > 0.95 and gesture.category_name == "Z":
+                if gesture.score > self.confidence_threshold or gesture.score > 0.95 and gesture.category_name == "Z":
                     gesture_detected = True
                     self.last_gesture_time = current_time
 
                     if (self.last_detected_gesture != gesture.category_name or 
-                        current_time - self.last_detected_time > 3):
+                        current_time - self.last_detected_time > self.double_letter_timer):
                         self.text += gesture.category_name
                         self.last_detected_gesture = gesture.category_name
                         self.last_detected_time = current_time
                         print(f"Detected: {gesture.category_name} (Confidence: {gesture.score:.5f})")
 
-        if not gesture_detected and current_time - self.last_gesture_time > 2:
+        if not gesture_detected and current_time - self.last_gesture_time > self.confirm_word_timer:
             if self.text:
                 corrected_word = self.spell.correction(self.text).lower()
                 self.blob += corrected_word + " "
@@ -127,9 +184,6 @@ class MainWindow(QMainWindow):
         elif self.blob.string.count(" ") >= 1 and current_time - self.last_gesture_time > 2:
             self.blob.correct()
 
-        if current_time - self.last_gesture_time >= 5:
-            self.blob = tb("")
-            self.text = ""
 
         if hasattr(self, "transcriptionTextBox"):
             combined_text = self.blob.string + self.text if self.text else self.blob.string

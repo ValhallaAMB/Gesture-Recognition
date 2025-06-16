@@ -46,10 +46,11 @@ class MainWindow(QMainWindow):
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
         
-        # Initialize variables with default values
+        # Timers and Threshold
         self.confidence_threshold = 0.99
         self.confirm_word_timer = 2.0
         self.double_letter_timer = 3.0
+        self.display_letter_delay_timer = 1.5  # Delay for displaying letters
         
         # Set UI elements to match initial values
         self.confidenceSlider.setValue(int(self.confidence_threshold * 100))
@@ -153,49 +154,44 @@ class MainWindow(QMainWindow):
     def display_sentence(self, image, results):
         current_time = time.time()
         gesture_detected = False
-        
 
         for gestures in results.gestures:
             for gesture in gestures:
                 print(f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})")
-                if gesture.score > self.confidence_threshold or gesture.score > 0.95 and gesture.category_name == "Z":
+                if gesture.score > self.confidence_threshold or (gesture.score > 0.95 and gesture.category_name == "Z"):
                     gesture_detected = True
                     self.last_gesture_time = current_time
 
-                    if (self.last_detected_gesture != gesture.category_name or 
-                        current_time - self.last_detected_time > self.double_letter_timer):
+                    # Add gesture to text if it's new or after a cooldown
+                    if (self.last_detected_gesture != gesture.category_name and 
+                        current_time - self.last_detected_time > self.display_letter_delay_timer) or (current_time - self.last_detected_time > self.double_letter_timer):
                         self.text += gesture.category_name
                         self.last_detected_gesture = gesture.category_name
                         self.last_detected_time = current_time
                         print(f"Detected: {gesture.category_name} (Confidence: {gesture.score:.5f})")
 
+        # If no gesture detected and timer expired, process current word
         if not gesture_detected and current_time - self.last_gesture_time > self.confirm_word_timer:
             if self.text:
-                corrected_word = self.spell.correction(self.text).lower()
-                self.blob += corrected_word + " "
+                corrected_word = self.spell.correction(self.text)
+                if corrected_word:
+                    self.blob += corrected_word.lower() + " "
+                else:
+                    # If correction fails, just use lowercase on self.text instead
+                    self.blob += self.text.lower() + " "
                 self.text = ""
             self.last_gesture_time = current_time
 
-        if len(self.blob) > 100:
-            self.blob = tb(self.blob.string[-100:])
-            self.blob.correct()
-        elif self.blob.string.count(" ") >= 2:
-            self.blob.correct()
-        elif self.blob.string.count(" ") >= 1 and current_time - self.last_gesture_time > 2:
-            self.blob.correct()
 
-
+        # Update transcription box UI
         if hasattr(self, "transcriptionTextBox"):
             combined_text = self.blob.string + self.text if self.text else self.blob.string
-
             self.transcriptionTextBox.setPlainText(combined_text)
 
-            # Move cursor to the end of the text to follow new additions
+            # Scroll to end
             cursor = self.transcriptionTextBox.textCursor()
             cursor.movePosition(cursor.End)
             self.transcriptionTextBox.setTextCursor(cursor)
-
-            # Ensure the text box scrolls to the cursor
             self.transcriptionTextBox.ensureCursorVisible()
 
 

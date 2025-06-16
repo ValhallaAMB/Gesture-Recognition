@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         self.confidence_threshold = 0.99
         self.confirm_word_timer = 2.0
         self.double_letter_timer = 3.0
-        self.display_letter_delay_timer = 1.5  # Delay for displaying letters
+        self.display_letter_delay_timer = 1.5  
         
         # Set UI elements to match initial values
         self.confidenceSlider.setValue(int(self.confidence_threshold * 100))
@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
     def update_word_timer(self):
         try:
             value = float(self.wordTimerEdit.text())
-            if value >= 0.5:  # Ensure value is greater than or equal to 0.5, subject to change
+            if value >= 0.5:  
                 self.confirm_word_timer = value
             else:
                 self.wordTimerEdit.setText(str(self.confirm_word_timer))
@@ -144,14 +144,15 @@ class MainWindow(QMainWindow):
     def update_letter_timer(self):
         try:
             value = float(self.letterTimerEdit.text())
-            if value > 0:  # Ensure positive value
+            # Must be a positive value
+            if value > 0:  
                 self.double_letter_timer = value
             else:
                 self.letterTimerEdit.setText(str(self.double_letter_timer))
         except ValueError:
             self.letterTimerEdit.setText(str(self.double_letter_timer))
 
-    def display_sentence(self, image, results):
+    def display_sentence(self, results):
         current_time = time.time()
         gesture_detected = False
 

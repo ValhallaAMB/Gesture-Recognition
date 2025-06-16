@@ -33,6 +33,7 @@ last_detected_time = 0  # To store the time of the last detected gesture
 
 
 # ---TIMERS THAT YOU CAN CHANGE---
+Display_Letter_Delay_Timer = 2
 Duplicate_Letter_Timer = 2.5
 Clear_Screen_Timer = 5
 Add_Word_To_Sentence_Timer = 2
@@ -80,7 +81,7 @@ def display_sentence(image, results) -> None:
                 # Add gesture to text only if cooldown period has elapsed or if it's a different gesture
                 if (
                     # last_detected_gesture != gesture.category_name
-                    (last_detected_gesture != gesture.category_name and current_time - last_detected_time > 2)
+                    (last_detected_gesture != gesture.category_name and current_time - last_detected_time > Display_Letter_Delay_Timer)
                     or current_time - last_detected_time > Duplicate_Letter_Timer    # wait 2.5 seconds before displaying duplicate letters, increase this if you are slow in fingerspelling
                 ):
                     text += gesture.category_name

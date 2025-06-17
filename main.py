@@ -152,14 +152,14 @@ class MainWindow(QMainWindow):
         except ValueError:
             self.letterTimerEdit.setText(str(self.double_letter_timer))
 
-    def display_sentence(self, results):
+    def display_sentence(self, image, results):
         current_time = time.time()
         gesture_detected = False
 
         for gestures in results.gestures:
             for gesture in gestures:
                 print(f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})")
-                if gesture.score > self.confidence_threshold or (gesture.score > 0.95 and gesture.category_name == "Z"):
+                if gesture.score > self.confidence_threshold:
                     gesture_detected = True
                     self.last_gesture_time = current_time
 

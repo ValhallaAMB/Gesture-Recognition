@@ -7,3 +7,8 @@ Run guide
 4. Run pip install -r requirements.txt
 5. Deactivate venv from terminal using deactivate
 6. Run main.py from terminal using python main.py OR using python launcher in VS code 
+
+### Text-to-Speech library
+1. [gTTS Text-to-Speech](https://pypi.org/project/gTTS/) I want to test
+
+2. [Pyttex3](https://pypi.org/project/pyttsx3/#description) Tested and works properly

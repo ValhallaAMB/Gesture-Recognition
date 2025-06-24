@@ -1,7 +1,8 @@
 import sys
 import cv2
-import numpy as np
+# import numpy as np
 import time
+import pyttsx3
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QGraphicsScene
@@ -34,6 +35,11 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi("./UI/main_screen.ui", self)
         
+        # Text-to-speech engine initialization
+        self.engine = pyttsx3.init()
+        self.engine.setProperty('rate', 100)
+        self.engine.setProperty('volume', 0.75)
+        
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
@@ -51,7 +57,7 @@ class MainWindow(QMainWindow):
 
         # Initialize MediaPipe gesture recognizer
         options = GestureRecognizerOptions(
-            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer8.task"),
+            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer22.task"),
             num_hands=1,
         )
         self.recognizer = GestureRecognizer.create_from_options(options)
@@ -117,6 +123,9 @@ class MainWindow(QMainWindow):
                 corrected_word = self.spell.correction(self.text).lower()
                 self.blob += corrected_word + " "
                 self.text = ""
+                # Speak the corrected word and wait for it to finish
+                self.engine.say(corrected_word)
+                self.engine.runAndWait()
             self.last_gesture_time = current_time
 
         if len(self.blob) > 100:

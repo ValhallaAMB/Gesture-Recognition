@@ -8,7 +8,7 @@ Run guide
 5. Deactivate venv from terminal using deactivate
 6. Run main.py from terminal using python main.py OR using python launcher in VS code 
 
-### Text-to-Speech library
-1. [gTTS Text-to-Speech](https://pypi.org/project/gTTS/) I want to test
-
-2. [Pyttex3](https://pypi.org/project/pyttsx3/#description) Tested and works properly
+### Added changes
+1. [Pyttex3 - Text-to-Speech](https://pypi.org/project/pyttsx3/#description) Tested and works properly. 
+2. [Threading python](https://docs.python.org/3/library/threading.html) to continue the the live stream while pronouncing the words.
+3. Numpy and Matplotlib may not be needed in `main.py` but they are used by other dependencies.  

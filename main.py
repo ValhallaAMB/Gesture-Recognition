@@ -1,9 +1,9 @@
 import sys
 import os
 import cv2
-# import numpy as np
 import time
-import pyttsx3
+import pyttsx3 # Text-to-speech engine
+import threading # Multithreading (i/o operations)
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QGraphicsScene
@@ -18,13 +18,12 @@ from mediapipe.framework.formats import landmark_pb2
 from spellchecker import SpellChecker
 from textblob import TextBlob as tb
 
-
 class WelcomeScreen(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi("./UI/welcome_screen.ui", self)
         self.startButton.clicked.connect(self.open_main_window)
-         # Construct the absolute path to the assets directory
+        # Construct the absolute path to the assets directory
         base_dir = os.path.dirname(os.path.abspath(__file__))
         logo_path = os.path.join(base_dir, "assets", "logo.jpg")
         if os.path.exists(logo_path):
@@ -42,32 +41,35 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi("./UI/main_screen.ui", self)
-        
-        # Text-to-speech engine initialization
+
+        # Text-to-speech engine initialization pyttsx3
         self.engine = pyttsx3.init()
-        self.engine.setProperty('rate', 100)
-        self.engine.setProperty('volume', 0.75)
+        self.engine.setProperty("rate", 150) # Set speech rate
+        self.engine.setProperty("volume", 0.75) # Set volume (0.0 to 1.0)
         
+        # Lock for thread safety, ensuring only one thread can access the TTS engine at a time
+        self.tts_lock = threading.Lock() # Add lock for text-to-speech (TTS) engine
+
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
-        
+
         # Timers and Threshold
         self.confidence_threshold = 0.99
         self.confirm_word_timer = 2.0
         self.double_letter_timer = 3.0
-        self.display_letter_delay_timer = 1.5  
-        
+        self.display_letter_delay_timer = 1.5
+
         # Set UI elements to match initial values
         self.confidenceSlider.setValue(int(self.confidence_threshold * 100))
         self.confidenceValueLabel.setText(f"{self.confidence_threshold:.2f}")
         self.wordTimerEdit.setText(str(int(self.confirm_word_timer)))
         self.letterTimerEdit.setText(str(int(self.double_letter_timer)))
-        
+
         self.confidenceSlider.valueChanged.connect(self.update_confidence_threshold)
         self.wordTimerEdit.editingFinished.connect(self.update_word_timer)
         self.letterTimerEdit.editingFinished.connect(self.update_letter_timer)
-        
+
         self.confidence_threshold = float(self.confidenceValueLabel.text())
         self.confirm_word_timer = float(self.wordTimerEdit.text())
         self.double_letter_timer = float(self.letterTimerEdit.text())
@@ -85,7 +87,9 @@ class MainWindow(QMainWindow):
 
         # Initialize MediaPipe gesture recognizer
         options = GestureRecognizerOptions(
-            base_options=BaseOptions(model_asset_path="./models/gesture_recognizer22.task"),
+            base_options=BaseOptions(
+                model_asset_path="./models/gesture_recognizer22.task"
+            ),
             num_hands=1,
         )
         self.recognizer = GestureRecognizer.create_from_options(options)
@@ -118,18 +122,24 @@ class MainWindow(QMainWindow):
         for hand_landmarks in results.hand_landmarks:
             hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
             hand_landmarks_proto.landmark.extend(
-                [landmark_pb2.NormalizedLandmark(x=lm.x, y=lm.y, z=lm.z) for lm in hand_landmarks]
+                [
+                    landmark_pb2.NormalizedLandmark(x=lm.x, y=lm.y, z=lm.z)
+                    for lm in hand_landmarks
+                ]
             )
             mp_drawing.draw_landmarks(
                 image,
                 hand_landmarks_proto,
                 mp_hands.HAND_CONNECTIONS,
-                mp_drawing.DrawingSpec(color=(80, 22, 10), thickness=2, circle_radius=4),
-                mp_drawing.DrawingSpec(color=(80, 44, 121), thickness=2, circle_radius=2),
+                mp_drawing.DrawingSpec(
+                    color=(80, 22, 10), thickness=2, circle_radius=4
+                ),
+                mp_drawing.DrawingSpec(
+                    color=(80, 44, 121), thickness=2, circle_radius=2
+                ),
             )
-    
-    
-    # For confidence threshold slider        
+
+    # For confidence threshold slider
     def update_confidence_threshold(self):
         value = self.confidenceSlider.value() / 100
         self.confidence_threshold = value
@@ -139,7 +149,7 @@ class MainWindow(QMainWindow):
     def update_word_timer(self):
         try:
             value = float(self.wordTimerEdit.text())
-            if value >= 0.5:  
+            if value >= 0.5:
                 self.confirm_word_timer = value
             else:
                 self.wordTimerEdit.setText(str(self.confirm_word_timer))
@@ -151,12 +161,17 @@ class MainWindow(QMainWindow):
         try:
             value = float(self.letterTimerEdit.text())
             # Must be a positive value
-            if value > 0:  
+            if value > 0:
                 self.double_letter_timer = value
             else:
                 self.letterTimerEdit.setText(str(self.double_letter_timer))
         except ValueError:
             self.letterTimerEdit.setText(str(self.double_letter_timer))
+
+    # Text-to-speech function 
+    def speak_text(self):
+        with self.tts_lock:
+            self.engine.runAndWait()
 
     def display_sentence(self, image, results):
         current_time = time.time()
@@ -164,46 +179,66 @@ class MainWindow(QMainWindow):
 
         for gestures in results.gestures:
             for gesture in gestures:
-                print(f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})")
+                print(
+                    f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})"
+                )
                 if gesture.score > self.confidence_threshold:
                     gesture_detected = True
                     self.last_gesture_time = current_time
 
                     # Add gesture to text if it's new or after a cooldown
-                    if (self.last_detected_gesture != gesture.category_name and 
-                        current_time - self.last_detected_time > self.display_letter_delay_timer) or (current_time - self.last_detected_time > self.double_letter_timer):
+                    if (
+                        self.last_detected_gesture != gesture.category_name
+                        and current_time - self.last_detected_time
+                        > self.display_letter_delay_timer
+                    ) or (
+                        current_time - self.last_detected_time
+                        > self.double_letter_timer
+                    ):
                         self.text += gesture.category_name
                         self.last_detected_gesture = gesture.category_name
                         self.last_detected_time = current_time
-                        print(f"Detected: {gesture.category_name} (Confidence: {gesture.score:.5f})")
+                        print(
+                            f"Detected: {gesture.category_name} (Confidence: {gesture.score:.5f})"
+                        )
 
         # If no gesture detected and timer expired, process current word
-        if not gesture_detected and current_time - self.last_gesture_time > self.confirm_word_timer:
+        if (
+            not gesture_detected
+            and current_time - self.last_gesture_time > self.confirm_word_timer
+        ):
             if self.text:
                 corrected_word = self.spell.correction(self.text)
                 if corrected_word:
                     self.blob += corrected_word.lower() + " "
+                    # Speak the corrected word and wait for it to finish
+                    self.engine.say(corrected_word)  # pyttsx3
                 else:
                     # If correction fails, just use lowercase on self.text instead
                     self.blob += self.text.lower() + " "
+                    # Speak the corrected word and wait for it to finish
+                    self.engine.say(
+                        self.text.lower()
+                    )  # Must be lowercase to read it as word, not as a abbreviations
                 self.text = ""
-                # Speak the corrected word and wait for it to finish
-                self.engine.say(corrected_word)
-                self.engine.runAndWait()
             self.last_gesture_time = current_time
-
 
         # Update transcription box UI
         if hasattr(self, "transcriptionTextBox"):
-            combined_text = self.blob.string + self.text if self.text else self.blob.string
+            combined_text = (
+                self.blob.string + self.text if self.text else self.blob.string
+            )
             self.transcriptionTextBox.setPlainText(combined_text)
+
+            # Speak the current transcription
+            # Run text-to-speech asynchronously to avoid blocking UI
+            threading.Thread(target=self.speak_text).start()
 
             # Scroll to end
             cursor = self.transcriptionTextBox.textCursor()
             cursor.movePosition(cursor.End)
             self.transcriptionTextBox.setTextCursor(cursor)
             self.transcriptionTextBox.ensureCursorVisible()
-
 
     def update_frame(self):
         if not self.cap or not self.cap.isOpened():

@@ -1,3 +1,6 @@
+# TODO: take another look at speeling duplicate letters using gesture sliding / change in coordinates, the code should be
+#       in the commented code txt file
+
 from pprint import pprint
 import cv2 # used for video capture and image processing
 import numpy as np

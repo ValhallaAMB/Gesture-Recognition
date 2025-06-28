@@ -33,7 +33,7 @@ last_detected_time = 0  # To store the time of the last detected gesture
 Display_Letter_Delay_Timer = 2
 Duplicate_Letter_Timer = 2.5
 Clear_Screen_Timer = 5
-Add_Word_To_Sentence_Timer = 2
+Add_Word_To_Sentence_Timer = 3
 
 # Function to draw hand landmarks on the image
 def draw_landmarks(image, results) -> None:

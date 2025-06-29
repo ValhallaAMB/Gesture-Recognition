@@ -54,7 +54,6 @@ class MainWindow(QMainWindow):
         self.tts_lock = threading.Lock() # Add lock for text-to-speech (TTS) engine
         
         
-        
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
@@ -208,10 +207,13 @@ class MainWindow(QMainWindow):
                 if corrected_word:
                     self.blob += corrected_word.lower() + " "
                     # Speak the corrected word and wait for it to finish
-                    self.engine.say(corrected_word)  # pyttsx3
+                    if self.tts_enabled:
+                        self.engine.say(corrected_word)  # pyttsx3
                 else:
                     # If correction fails, just use lowercase on self.text instead
                     self.blob += self.text.lower() + " "
+                    if self.tts_enabled:
+                        self.engine.say(self.text.lower())  # pyttsx3
                 self.text = ""
             self.last_gesture_time = current_time
 

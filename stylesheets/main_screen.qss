@@ -7,11 +7,11 @@ QMainWindow {
 QGroupBox {
     border: 1px solid #ddd;
     border-radius: 5px;
-    margin: 25px;
+    margin: 15px;
     padding-top: 15px;
     font-size: 16px;
     font-weight: bold;
-    color: #333;
+    color: #333333;
 }
 
 #cameraGroup::title,
@@ -68,7 +68,7 @@ QPushButton {
     padding: 10px 20px;
     text-align: center;
     font-size: 14px;
-    margin: 4px 2px;
+    margin: 4px 15px 4px 0px;
     border-radius: 4px;
     min-width: 120px;
 }
@@ -81,7 +81,7 @@ QPushButton:hover {
 #cameraToggleButton,
 #landmarksToggleButton,
 #ttsToggleButton {
-    background-color: #333;
+    background-color: #333333;
     color: white;
     padding: 10px 20px;
     text-align: center;
@@ -149,12 +149,12 @@ QTextEdit {
 QLabel {
     font-weight: bold;
     font-size: 25px;
-    color: #333;
+    color: #333333;
 }
 
 #confidenceLabel {
     font-size: 16px;
-    color: #333;
+    color: #333333;
     font-weight: bold;
     padding: 5px;
     background-color: #e8f5e9;
@@ -177,7 +177,7 @@ QLabel {
 #wordTimerLabel,
 #letterTimerLabel {
     font-size: 14px;
-    color: #333;
+    color: #333333;
     font-weight: bold;
     padding: 4px 8px;
     background-color: #e8f5e9;
@@ -237,7 +237,7 @@ QLineEdit:focus {
 
 /* ---------- Graphics View ---------- */
 QGraphicsView {
-    background-color: #333;
+    background-color: #333333;
 }
 
 /* ---------- Vertical Line Separator ---------- */

@@ -28,7 +28,7 @@ class WelcomeScreen(QWidget):
         self.startButton.clicked.connect(self.open_main_window)
          # Construct the absolute path to the assets directory
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        logo_path = os.path.join(base_dir, "assets", "logo.jpg")
+        logo_path = os.path.join(base_dir, "assets", "logo.png")
         if os.path.exists(logo_path):
             self.logoLabel.setPixmap(QPixmap(logo_path))
         else:

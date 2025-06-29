@@ -32,7 +32,8 @@ QPushButton#startButton {
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 8px;
-    margin-left: 15px;
+    min-width: 200px;
+    max-width: 200px;
 }
 QPushButton#startButton:hover {
     background-color: #45a049;
@@ -48,7 +49,7 @@ QLabel#logoLabel {
     <number>20</number>
    </property>
    
-   <!-- Add a horizontal spacer before logo -->
+   <!-- Top spacer -->
    <item>
     <spacer name="topSpacer">
      <property name="orientation">
@@ -141,19 +142,52 @@ QLabel#logoLabel {
     </widget>
    </item>
 
-   <!-- Start Button -->
+   <!-- Start Button - Now centered with a QHBoxLayout -->
    <item>
-    <widget class="QPushButton" name="startButton">
-     <property name="text">
-      <string>Start</string>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <property name="spacing">
+      <number>0</number>
      </property>
-     <property name="minimumHeight">
-      <number>40</number>
-     </property>
-    </widget>
+     <item>
+      <spacer name="buttonLeftSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="startButton">
+       <property name="text">
+        <string>Start</string>
+       </property>
+       <property name="minimumHeight">
+        <number>40</number>
+       </property>
+       <property name="minimumWidth">
+        <number>200</number>
+       </property>
+       <property name="maximumWidth">
+        <number>200</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="buttonRightSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </item>
    
-   <!-- Add a bottom spacer for balance -->
+   <!-- Bottom spacer -->
    <item>
     <spacer name="bottomSpacer">
      <property name="orientation">

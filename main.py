@@ -1,8 +1,8 @@
 import sys
 import os
 import cv2
-import pyttsx3 # Text-to-speech engine
-import threading # Multithreading (i/o operations)
+import pyttsx3 
+import threading 
 import time
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
@@ -15,10 +15,12 @@ from mediapipe.tasks.python.vision import GestureRecognizer, GestureRecognizerOp
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.framework.formats import landmark_pb2
 
+# Spell Checker and TextBlob Imports
 from spellchecker import SpellChecker
 from textblob import TextBlob as tb
 
 
+# Welcome Screen Class
 class WelcomeScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -38,22 +40,25 @@ class WelcomeScreen(QWidget):
         self.close()
 
 
+# Main Window Class
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi("./UI/main_screen.ui", self)
         
-         # Text-to-speech engine initialization pyttsx3
+        # Text-to-speech engine initialization pyttsx3
         self.engine = pyttsx3.init()
-        self.engine.setProperty("rate", 150) # Set speech rate
-        self.engine.setProperty("volume", 0.75) # Set volume (0.0 to 1.0)
         
-        self.tts_enabled = False  # Default to off
+        # Set properties for the TTS engine
+        self.engine.setProperty("rate", 150) 
+        self.engine.setProperty("volume", 0.75) 
+        
+        self.tts_enabled = False 
         
         # Lock for thread safety, ensuring only one thread can access the TTS engine at a time
         self.tts_lock = threading.Lock() # Add lock for text-to-speech (TTS) engine
         
-        
+        # Initialize variables for gesture recognition and transcription
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
@@ -70,9 +75,11 @@ class MainWindow(QMainWindow):
         self.wordTimerEdit.setText(str(int(self.confirm_word_timer)))
         self.letterTimerEdit.setText(str(int(self.double_letter_timer)))
         
+        # Connect UI elements to functions
         self.confidenceSlider.valueChanged.connect(self.update_confidence_threshold)
         self.wordTimerEdit.editingFinished.connect(self.update_word_timer)
         self.letterTimerEdit.editingFinished.connect(self.update_letter_timer)
+        
         
         self.confidence_threshold = float(self.confidenceValueLabel.text())
         self.confirm_word_timer = float(self.wordTimerEdit.text())
@@ -181,10 +188,12 @@ class MainWindow(QMainWindow):
             with self.tts_lock:
                 self.engine.runAndWait()
 
+    # Function to display the recognized sentence and update the transcription box
     def display_sentence(self, image, results):
         current_time = time.time()
         gesture_detected = False
 
+        # Check if any gestures were detected
         for gestures in results.gestures:
             for gesture in gestures:
                 print(f"Detecting: {gesture.category_name} (Confidence: {gesture.score:.5f})")
@@ -208,12 +217,12 @@ class MainWindow(QMainWindow):
                     self.blob += corrected_word.lower() + " "
                     # Speak the corrected word and wait for it to finish
                     if self.tts_enabled:
-                        self.engine.say(corrected_word)  # pyttsx3
+                        self.engine.say(corrected_word)  
                 else:
                     # If correction fails, just use lowercase on self.text instead
                     self.blob += self.text.lower() + " "
                     if self.tts_enabled:
-                        self.engine.say(self.text.lower())  # pyttsx3
+                        self.engine.say(self.text.lower())  
                 self.text = ""
             self.last_gesture_time = current_time
 
@@ -223,7 +232,7 @@ class MainWindow(QMainWindow):
             combined_text = self.blob.string + self.text if self.text else self.blob.string
             self.transcriptionTextBox.setPlainText(combined_text)
             
-             # Speak the current transcription
+            # Speak the current transcription
             # Run text-to-speech asynchronously to avoid blocking UI
             threading.Thread(target=self.speak_text).start()
 
@@ -233,7 +242,7 @@ class MainWindow(QMainWindow):
             self.transcriptionTextBox.setTextCursor(cursor)
             self.transcriptionTextBox.ensureCursorVisible()
 
-
+    # Function to update the video frame
     def update_frame(self):
         if not self.cap or not self.cap.isOpened():
             return
@@ -273,11 +282,13 @@ class MainWindow(QMainWindow):
             self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Cannot open webcam")
-            self.cameraToggleButton.setChecked(False)  # Sync toggle state
+            # Sync toggle state
+            self.cameraToggleButton.setChecked(False)  
             return
         if not self.timer.isActive():
             self.timer.start(30)
-        self.cameraToggleButton.setChecked(True)  # Ensure toggle is on
+        # Ensure toggle is on
+        self.cameraToggleButton.setChecked(True)  
 
     def stop_camera(self):
         if self.cap and self.cap.isOpened():
@@ -285,7 +296,8 @@ class MainWindow(QMainWindow):
             self.cap.release()
             self.cap = None
             self.scene.clear()
-        self.cameraToggleButton.setChecked(False)  # Ensure toggle is off
+        # Ensure toggle is off
+        self.cameraToggleButton.setChecked(False)  
 
     def clear_transcription(self):
         self.text = ""

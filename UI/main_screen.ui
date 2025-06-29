@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sign Language Translator</string>
+   <string>Gesture Detection and Recognition</string>
   </property>
 
   <widget class="QWidget" name="centralwidget">

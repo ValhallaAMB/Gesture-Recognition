@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sign Language Translator</string>
+   <string>Gesture Detection and Recognition</string>
   </property>
   <property name="styleSheet">
    <string notr="true">
@@ -134,7 +134,7 @@ QLabel#logoLabel {
    <item>
     <widget class="QLabel" name="titleLabel">
      <property name="text">
-      <string>Welcome to Sign Language Translator</string>
+      <string>Welcome to Gesture Detection and Recognition</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

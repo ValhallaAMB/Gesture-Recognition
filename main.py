@@ -1,7 +1,8 @@
 import sys
 import os
 import cv2
-import numpy as np
+import pyttsx3 # Text-to-speech engine
+import threading # Multithreading (i/o operations)
 import time
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
@@ -42,6 +43,17 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi("./UI/main_screen.ui", self)
         
+         # Text-to-speech engine initialization pyttsx3
+        self.engine = pyttsx3.init()
+        self.engine.setProperty("rate", 150) # Set speech rate
+        self.engine.setProperty("volume", 0.75) # Set volume (0.0 to 1.0)
+        
+        self.tts_enabled = False  # Default to off
+        
+        # Lock for thread safety, ensuring only one thread can access the TTS engine at a time
+        self.tts_lock = threading.Lock() # Add lock for text-to-speech (TTS) engine
+        
+        
         self.last_detected_gesture = None
         self.last_detected_time = 0
         self.last_gesture_time = time.time()
@@ -67,11 +79,12 @@ class MainWindow(QMainWindow):
         self.double_letter_timer = float(self.letterTimerEdit.text())
 
         # Connect UI buttons to functions
-        self.cameraOnButton.clicked.connect(self.start_camera)
-        self.cameraOffButton.clicked.connect(self.stop_camera)
+        self.cameraToggleButton.clicked.connect(self.toggle_camera)
+        self.landmarksToggleButton.clicked.connect(self.toggle_landmarks)
+        self.ttsToggleButton.clicked.connect(self.toggle_tts)   
         self.clearButton.clicked.connect(self.clear_transcription)
         self.exitButton.clicked.connect(self.exit_app)
-        self.toggleLandmarksButton.clicked.connect(self.toggle_landmarks)
+        
 
         # Setup QGraphicsScene for video
         self.scene = QGraphicsScene()
@@ -100,8 +113,18 @@ class MainWindow(QMainWindow):
         self.display_landmarks = False
 
     def toggle_landmarks(self):
-        self.display_landmarks = not self.display_landmarks
+        self.display_landmarks = self.landmarksToggleButton.isChecked()
         print(f"Landmark display: {'ON' if self.display_landmarks else 'OFF'}")
+    
+    def toggle_camera(self):
+        if self.cameraToggleButton.isChecked():
+            self.start_camera()
+        else:
+            self.stop_camera()
+                
+    def toggle_tts(self):
+        self.tts_enabled = self.ttsToggleButton.isChecked()
+        print(f"Text-to-speech: {'ON' if self.tts_enabled else 'OFF'}")
 
     def draw_landmarks(self, image, results):
         if not self.display_landmarks:
@@ -151,6 +174,12 @@ class MainWindow(QMainWindow):
                 self.letterTimerEdit.setText(str(self.double_letter_timer))
         except ValueError:
             self.letterTimerEdit.setText(str(self.double_letter_timer))
+            
+    # Text-to-speech function 
+    def speak_text(self):
+        if self.tts_enabled:
+            with self.tts_lock:
+                self.engine.runAndWait()
 
     def display_sentence(self, image, results):
         current_time = time.time()
@@ -177,9 +206,14 @@ class MainWindow(QMainWindow):
                 corrected_word = self.spell.correction(self.text)
                 if corrected_word:
                     self.blob += corrected_word.lower() + " "
+                    # Speak the corrected word and wait for it to finish
+                    if self.tts_enabled:
+                        self.engine.say(corrected_word)  # pyttsx3
                 else:
                     # If correction fails, just use lowercase on self.text instead
                     self.blob += self.text.lower() + " "
+                    if self.tts_enabled:
+                        self.engine.say(self.text.lower())  # pyttsx3
                 self.text = ""
             self.last_gesture_time = current_time
 
@@ -188,6 +222,10 @@ class MainWindow(QMainWindow):
         if hasattr(self, "transcriptionTextBox"):
             combined_text = self.blob.string + self.text if self.text else self.blob.string
             self.transcriptionTextBox.setPlainText(combined_text)
+            
+             # Speak the current transcription
+            # Run text-to-speech asynchronously to avoid blocking UI
+            threading.Thread(target=self.speak_text).start()
 
             # Scroll to end
             cursor = self.transcriptionTextBox.textCursor()
@@ -235,9 +273,11 @@ class MainWindow(QMainWindow):
             self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Cannot open webcam")
+            self.cameraToggleButton.setChecked(False)  # Sync toggle state
             return
         if not self.timer.isActive():
             self.timer.start(30)
+        self.cameraToggleButton.setChecked(True)  # Ensure toggle is on
 
     def stop_camera(self):
         if self.cap and self.cap.isOpened():
@@ -245,6 +285,7 @@ class MainWindow(QMainWindow):
             self.cap.release()
             self.cap = None
             self.scene.clear()
+        self.cameraToggleButton.setChecked(False)  # Ensure toggle is off
 
     def clear_transcription(self):
         self.text = ""
@@ -267,6 +308,9 @@ if __name__ == "__main__":
 
     with open("./stylesheets/dark_theme.qss", "r") as f:
         app.setStyleSheet(f.read())
+        
+    with open("./stylesheets/main_screen.qss", "r") as f:
+        app.setStyleSheet(app.styleSheet() + f.read())
 
     welcome = WelcomeScreen()
     welcome.show()

@@ -32,7 +32,7 @@ QPushButton#startButton {
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 8px;
-    min-width: 150px;
+    margin-left: 15px;
 }
 QPushButton#startButton:hover {
     background-color: #45a049;

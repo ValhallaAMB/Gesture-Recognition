@@ -12,171 +12,20 @@
   <property name="windowTitle">
    <string>Sign Language Translator</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QMainWindow {
-    background-color: #f5f5f5;
-}
-QGroupBox {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-top: 10px;
-    padding-top: 15px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-}
-#cameraGroup::title, #transcriptionGroup::title {
-    color: white;
-    background-color: #4CAF50;
-    padding: 4px 10px;
-    border-radius: 3px;
-    margin-left: 10px;
-    subcontrol-origin: margin;
-}
-QPushButton {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 14px;
-    margin: 4px 2px;
-    border-radius: 4px;
-    min-width: 120px;
-}
-QPushButton:hover {
-    background-color: #45a049;
-}
-QTextEdit {
-    background-color: black;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 25px;
-    color: white;
-}
-QLabel {
-    font-weight: bold;
-    font-size: 25px;
-    color: #333;
-}
-QGraphicsView {
-    background-color: #333;
-}
 
-/* Settings Group Box */
-#settingsGroup {
-    background-color: #4CAF50;
-    border: 2px solid #45a049;
-}
-
-#settingsGroup::title {
-    color:  #f3f9f4 ;
-    background-color: #4CAF50;
-    padding: 4px 10px;
-    border-radius: 3px;
-    margin-left: 10px;
-    subcontrol-origin: margin;
-}
-
-/* Confidence Threshold Section */
-#confidenceLabel {
-    font-size: 16px;
-    color: #333;
-    font-weight: bold;
-    padding: 5px;
-    background-color: #e8f5e9;
-    border-radius: 4px;
-    border: 1px solid #c8e6c9;
-}
-
-#confidenceValueLabel {
-    font-weight: bold;
-    font-size: 16px;
-    color: #000000;
-    background-color: #ffffff;
-    border-radius: 4px;
-    padding: 4px 8px;
-    border: 1px solid #bdc3c7;
-    min-width: 50px;
-    text-align: center;
-}
-
-/* Timer Labels */
-#wordTimerLabel, #letterTimerLabel {
-    font-size: 14px;
-    color: #333;
-    font-weight: bold;
-    padding: 4px 8px;
-    background-color: #e8f5e9;
-    border-radius: 4px;
-    border: 1px solid #c8e6c9;
-    margin-right: 5px;
-}
-
-/* Slider Styling */
-QSlider {
-    min-height: 20px;
-}
-QSlider::groove:horizontal {
-    border: 1px solid #bbb;
-    background: #f0f0f0;
-    height: 8px;
-    border-radius: 4px;
-}
-QSlider::sub-page:horizontal {
-    background:    #0cde5c;
-    border: 1px solid  #45a049;
-    height: 8px;
-    border-radius: 4px;
-}
-QSlider::handle:horizontal {
-    background: #fff;
-    border: 1px solid #ccc;
-    width: 16px;
-    margin: -4px 0;
-    border-radius: 8px;
-}
-QSlider::handle:horizontal:hover {
-    background: #f5f5f5;
-    border: 1px solid #bbb;
-}
-
-/* Line Edit Styling */
-QLineEdit {
-    border: 1px solid #95a5a6;
-    border-radius: 4px;
-    padding: 4px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #000000;
-    background: white;
-    selection-background-color: #4CAF50;
-    min-width: 50px;
-}
-QLineEdit:focus {
-    border: 2px solid #4CAF50;
-}
-
-/* Vertical Line Separator */
-QFrame[frameShape="4"] {  /* VLine */
-    color: #c8e6c9;
-    background-color: #c8e6c9;
-}
-</string>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="mainVerticalLayout">
     <property name="spacing">
      <number>20</number>
     </property>
+
     <!-- Main Content Area -->
     <item>
      <layout class="QHBoxLayout" name="contentLayout">
       <property name="spacing">
        <number>20</number>
       </property>
+
       <!-- Camera Feed -->
       <item>
        <widget class="QGroupBox" name="cameraGroup">
@@ -186,7 +35,6 @@ QFrame[frameShape="4"] {  /* VLine */
         <layout class="QVBoxLayout" name="cameraLayout">
          <item>
           <widget class="QGraphicsView" name="videoView">
-           <!-- Remove fixed minimum/maximum sizes -->
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>1</horstretch>
@@ -214,7 +62,6 @@ QFrame[frameShape="4"] {  /* VLine */
         <layout class="QVBoxLayout" name="transcriptionLayout">
          <item>
           <widget class="QTextEdit" name="transcriptionTextBox">
-           <!-- Remove fixed minimum/maximum sizes -->
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>1</horstretch>
@@ -237,8 +84,11 @@ QFrame[frameShape="4"] {  /* VLine */
             <bool>false</bool>
            </property>
            <property name="lineWrapMode">
-            <enum>QTextEdit::NoWrap</enum>
+            <enum>QTextEdit::WidgetWidth</enum>
            </property>
+           <property name="wordWrapMode">
+            <enum>QTextOption::WordWrap</enum>  <!-- This wraps at word boundaries -->
+            </property>
            <property name="acceptRichText">
             <bool>false</bool>
            </property>
@@ -423,33 +273,56 @@ QFrame[frameShape="4"] {  /* VLine */
      </widget>
     </item>
     
-    <!-- Button Controls -->
+    <!-- Toggle Button Group -->
     <item>
-     <layout class="QHBoxLayout" name="buttonLayout">
+     <widget class="QGroupBox" name="toggleButtonGroup">
+      <property name="title">
+       <string>Toggle Controls</string>
+      </property>
+      <layout class="QHBoxLayout" name="toggleButtonLayout">
+       <property name="spacing">
+        <number>20</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="cameraToggleButton">
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Camera</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="landmarksToggleButton">
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Landmarks</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="ttsToggleButton">
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Text-to-Speech</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    
+    <!-- Action Buttons -->
+    <item>
+     <layout class="QHBoxLayout" name="actionButtonLayout">
       <property name="spacing">
        <number>20</number>
       </property>
-      <item>
-       <widget class="QPushButton" name="cameraOnButton">
-        <property name="text">
-         <string>Start Camera</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="cameraOffButton">
-        <property name="text">
-         <string>Stop Camera</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="toggleLandmarksButton">
-        <property name="text">
-         <string>Toggle Landmarks</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
